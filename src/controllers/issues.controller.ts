@@ -108,6 +108,7 @@ export class IssuesController {
 
       if (message?.files) {
         for (const file of message.files) {
+          //TODO: 파일 업로드 추가
         }
       }
     }
@@ -182,11 +183,11 @@ export class IssuesController {
           id: reporter,
         },
         issuetype: {
-          //@TODO: 현재는 작업으로만 분류
+          //TODO: 현재는 작업으로만 분류
           id: `${process.env.JIRA_ISSUETYPE_ID}`,
         },
         project: {
-          //@TODO: 현재는 환급 프로젝트로만 처리
+          //TODO: 현재는 환급 프로젝트로만 처리
           id: `${process.env.JIRA_PROJECT_ID}`,
         },
       });
