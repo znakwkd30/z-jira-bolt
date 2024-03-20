@@ -37,7 +37,7 @@ export class IssuesController {
       });
 
     const firstThread = threads.messages[0];
-    if (event.item.ts !== firstThread.thread_ts) {
+    if (firstThread.thread_ts && event.item.ts !== firstThread.thread_ts) {
       this.slackService.client.chat.postMessage({
         channel: event.user,
         blocks: [
