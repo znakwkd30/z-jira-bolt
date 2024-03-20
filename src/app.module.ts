@@ -7,7 +7,7 @@ import { IssuesController } from './controllers';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: 'env/.env',
+      envFilePath: process.env.NODE_ENV === 'dv' ? 'env/dv.env' : 'env/.env',
     }),
     SlackModule.forRoot(),
   ],
