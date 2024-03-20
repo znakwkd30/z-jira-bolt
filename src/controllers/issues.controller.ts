@@ -72,7 +72,7 @@ export class IssuesController {
     let count: number = 0;
     for (const reaction of reactions.message.reactions) {
       if (reaction.name === 'issues') {
-        count++;
+        count = reaction.count;
       }
     }
 
