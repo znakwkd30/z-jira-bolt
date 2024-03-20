@@ -122,12 +122,9 @@ export class IssuesController {
         name: 'loading',
       });
 
-      const result = await this.gemini.run(
-        context +
-          `Your task is to extract document summaries and descriptions for Jira issue tickets.\n Ensure that summaries and descriptions contain all relevant context needed to interpret them - in other words don't extract small snippets that are missing important context. Provide output in JSON format as follows: \n {"summary": "한글", "description": "한글"}\n Provide summary and description value in Korean.`,
-      );
-
+      const result = await this.gemini.run(context);
       const parsed = JSON.parse(result);
+
       summary = parsed.summary;
       description = parsed.description;
     } catch (err) {
@@ -171,6 +168,14 @@ export class IssuesController {
                 },
               ],
               type: 'paragraph',
+            },
+            {
+              type: 'blockCard',
+              attrs: {
+                url: `${process.env.SLACK_URL}/${
+                  event.item.channel
+                }/p${event.item.ts.replace(/[.]/gi, '')}`,
+              },
             },
           ],
           type: 'doc',
