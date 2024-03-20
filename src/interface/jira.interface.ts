@@ -2,12 +2,6 @@ interface IIdObject {
   id: string;
 }
 
-interface IPriority {
-  id: string;
-  name: string;
-  iconUrl: string;
-}
-
 interface IErrorCollection {
   errorMessages: string[];
   errors: object;
@@ -37,7 +31,6 @@ export interface IJiraIssueRequest {
   reporter: IIdObject;
   issuetype: IIdObject;
   project: IIdObject;
-  priority: IPriority;
 }
 
 export interface IJiraIssueResponse {

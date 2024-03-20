@@ -189,11 +189,6 @@ export class IssuesController {
           //@TODO: 현재는 환급 프로젝트로만 처리
           id: `${process.env.JIRA_PROJECT_ID}`,
         },
-        priority: {
-          id: '3',
-          name: '중간',
-          iconUrl: `${process.env.JIRA_HOST}/images/icons/priorities/medium.svg`,
-        },
       });
     } catch (err) {
       console.log(`지라 이슈 생성 중 에러: ${JSON.stringify(err.response)}`);
