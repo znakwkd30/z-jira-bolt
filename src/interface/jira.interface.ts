@@ -39,3 +39,8 @@ export interface IJiraIssueResponse {
   self: string;
   transition: IJiraTransition;
 }
+
+export interface IJiraFile {
+  name: string;
+  data: any;
+}
