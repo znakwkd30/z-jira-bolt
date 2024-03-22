@@ -241,6 +241,30 @@ export class IssuesController {
       await this.jira.fileAttachments(issue.key, files);
     } catch (err) {
       console.log(`지라 처리 중 에러: ${JSON.stringify(err)}`);
+
+      this.slackService.client.chat.postMessage({
+        channel: event.user,
+        blocks: [
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: '지라 오류',
+            },
+          },
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
+                text: '잠시 후 재시도 부탁 드립니다.',
+              },
+            ],
+          },
+        ],
+      });
+
+      return;
     }
 
     say({
