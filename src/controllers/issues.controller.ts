@@ -8,7 +8,8 @@ import {
   UsersInfoResponse,
 } from '@slack/web-api';
 import { Gemini, Jira } from '../utils';
-import { IJiraIssueResponse } from '../interface';
+import { IJiraFile, IJiraIssueResponse } from '../interface';
+import axios from 'axios';
 
 @Controller()
 export class IssuesController {
@@ -92,7 +93,7 @@ export class IssuesController {
             elements: [
               {
                 type: 'mrkdwn',
-                text: `이미 이모지가 스레드에 달려있어서 지라 이슈를 생성할 수 없습니다. 이모지를 모두 지우고 다시 시도해보세요.`,
+                text: '이미 이모지가 스레드에 달려있어서 지라 이슈를 생성할 수 없습니다. 이모지를 모두 지우고 다시 시도해보세요.',
               },
             ],
           },
@@ -103,12 +104,28 @@ export class IssuesController {
     }
 
     let context: string = '';
+    let files: IJiraFile[] = [];
     for (const message of threads.messages) {
       context += message.text + '\n';
 
       if (message?.files) {
         for (const file of message.files) {
-          //TODO: 파일 업로드 추가
+          const result = await axios.get(file.url_private, {
+            headers: {
+              Accept:
+                'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+              'Accept-Encoding': 'gzip, deflate, br',
+              'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+              Connection: 'keep-alive',
+              Cookie: process.env.PIXED_COOKIE,
+            },
+            responseType: 'stream',
+          });
+
+          files.push({
+            name: file.title,
+            data: result.data,
+          });
         }
       }
     }
@@ -129,6 +146,30 @@ export class IssuesController {
       description = parsed.description;
     } catch (err) {
       console.log(`Gemini AI 오류 : ${err?.message}`);
+
+      this.slackService.client.chat.postMessage({
+        channel: event.user,
+        blocks: [
+          {
+            type: 'header',
+            text: {
+              type: 'plain_text',
+              text: 'Gemini Ai 처리 오류.',
+            },
+          },
+          {
+            type: 'context',
+            elements: [
+              {
+                type: 'mrkdwn',
+                text: '잠시 후 재시도 부탁 드립니다.',
+              },
+            ],
+          },
+        ],
+      });
+
+      return;
     } finally {
       await this.slackService.client.reactions.remove({
         channel: event.item.channel,
@@ -147,15 +188,15 @@ export class IssuesController {
         user: event.item_user,
       });
 
-    const assignee: string = await this.jira.findUser(
-      emojiUser.user.profile.email,
-    );
-    const reporter: string = await this.jira.findUser(
-      reportUser.user.profile.email,
-    );
-
     let issue: IJiraIssueResponse;
     try {
+      const assignee: string = await this.jira.findUser(
+        emojiUser.user.profile.email,
+      );
+      const reporter: string = await this.jira.findUser(
+        reportUser.user.profile.email,
+      );
+
       issue = await this.jira.createIssue({
         summary,
         description: {
@@ -196,8 +237,10 @@ export class IssuesController {
           id: `${process.env.JIRA_PROJECT_ID}`,
         },
       });
+
+      await this.jira.fileAttachments(issue.key, files);
     } catch (err) {
-      console.log(`지라 이슈 생성 중 에러: ${JSON.stringify(err.response)}`);
+      console.log(`지라 처리 중 에러: ${JSON.stringify(err)}`);
     }
 
     say({
