@@ -1,5 +1,11 @@
+import * as superagent from 'superagent';
 import axios, { AxiosResponse } from 'axios';
-import { IJiraIssueRequest, IJiraIssueResponse, IJiraUser } from '../interface';
+import {
+  IJiraFile,
+  IJiraIssueRequest,
+  IJiraIssueResponse,
+  IJiraUser,
+} from '../interface';
 
 export class Jira {
   private readonly baseUrl: string;
@@ -37,5 +43,25 @@ export class Jira {
     );
 
     return result.data;
+  }
+
+  async fileAttachments(issueIdOrKey: string, files: IJiraFile[]) {
+    const request = superagent(
+      'post',
+      `${this.baseUrl}/rest/api/3/issue/${issueIdOrKey}/attachments`,
+    );
+
+    request.set('authorization', `Basic ${this.token}`);
+    request.set('accept', 'application/json');
+    request.set('content-type', 'multipart/form-data');
+    request.set('X-Atlassian-Token', 'no-check');
+
+    for (const file of files) {
+      request.attach('file', file.data, {
+        filename: `${file.name}`,
+      });
+
+      await request;
+    }
   }
 }
