@@ -70,37 +70,34 @@ export class IssuesController {
         timestamp: event.item.ts,
       });
 
-    let count: number = 0;
     for (const reaction of reactions.message.reactions) {
       if (reaction.name === 'issues') {
-        count = reaction.count;
-      }
-    }
-
-    if (count > 1) {
-      this.slackService.client.chat.postMessage({
-        channel: event.user,
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: '이모지를 모두 지우고 다시 시도해주세요.',
-            },
-          },
-          {
-            type: 'context',
-            elements: [
+        if (reaction.count > 1) {
+          this.slackService.client.chat.postMessage({
+            channel: event.user,
+            blocks: [
               {
-                type: 'mrkdwn',
-                text: '이미 이모지가 스레드에 달려있어서 지라 이슈를 생성할 수 없습니다. 이모지를 모두 지우고 다시 시도해보세요.',
+                type: 'header',
+                text: {
+                  type: 'plain_text',
+                  text: '이모지를 모두 지우고 다시 시도해주세요.',
+                },
+              },
+              {
+                type: 'context',
+                elements: [
+                  {
+                    type: 'mrkdwn',
+                    text: '이미 이모지가 스레드에 달려있어서 지라 이슈를 생성할 수 없습니다. 이모지를 모두 지우고 다시 시도해보세요.',
+                  },
+                ],
               },
             ],
-          },
-        ],
-      });
+          });
 
-      return;
+          return;
+        }
+      }
     }
 
     let context: string = '';
