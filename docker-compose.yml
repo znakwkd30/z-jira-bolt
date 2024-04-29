@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  app:
+    image: z-jira-bolt
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    env_file:
+      - env/.env
